@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Catch-all default deny for safety
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Reusable validation helpers
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidTeacher(data) {
+      return data.keys().hasAll(['id', 'name'])
+             && data.keys().size() == 2
+             && data.id is string && data.id.size() <= 64
+             && data.name is string && data.name.size() <= 128;
+    }
+
+    function isValidGrade(data) {
+      return data.keys().hasAll(['id', 'numStudents', 'numSubjects', 'isInitialized', 'isPublished'])
+             && data.keys().size() == 5
+             && data.id is string && data.id.size() <= 64
+             && data.numStudents is number
+             && data.numSubjects is number
+             && data.isInitialized is bool
+             && data.isPublished is bool;
+    }
+
+    function isValidSubject(data) {
+      return data.keys().hasAll(['id', 'name', 'passkey'])
+             && (data.keys().size() == 3 || (data.keys().size() == 4 && data.keys().hasAll(['teacherId'])))
+             && data.id is string && data.id.size() <= 64
+             && data.name is string && data.name.size() <= 128
+             && data.passkey is string && data.passkey.size() <= 128
+             && (!data.keys().hasAll(['teacherId']) || data.teacherId is string);
+    }
+
+    function isValidStudent(data) {
+      return data.keys().hasAll(['id', 'name', 'sex', 'age', 'gradeId', 'marks'])
+             && data.keys().size() == 6
+             && data.id is string && data.id.size() <= 64
+             && data.name is string && data.name.size() <= 128
+             && (data.sex == 'M' || data.sex == 'F')
+             && data.age is number
+             && data.gradeId is string && data.gradeId.size() <= 64
+             && data.marks is map;
+    }
+
+    // Teachers Collection
+    match /teachers/{teacherId} {
+      allow read: if true;
+      allow create, update: if isValidId(teacherId) && isValidTeacher(request.resource.data);
+      allow delete: if isValidId(teacherId);
+    }
+
+    // Grades Collection
+    match /grades/{gradeId} {
+      allow read: if true;
+      allow create, update: if isValidId(gradeId) && isValidGrade(request.resource.data);
+      allow delete: if isValidId(gradeId);
+
+      // Subjects Subcollection
+      match /subjects/{subjectId} {
+        allow read: if true;
+        allow create, update: if isValidId(gradeId) && isValidId(subjectId) && isValidSubject(request.resource.data);
+        allow delete: if isValidId(gradeId) && isValidId(subjectId);
+      }
+
+      // Students Subcollection
+      match /students/{studentId} {
+        allow read: if true;
+        allow create, update: if isValidId(gradeId) && isValidId(studentId) && isValidStudent(request.resource.data);
+        allow delete: if isValidId(gradeId) && isValidId(studentId);
+      }
+    }
+  }
+}

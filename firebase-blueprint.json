@@ -1,0 +1,123 @@
+{
+  "entities": {
+    "Teacher": {
+      "title": "Teacher",
+      "description": "Authorized school lecturers who can grade subject performance",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique ID for the teacher, e.g. T-101"
+        },
+        "name": {
+          "type": "string",
+          "description": "Official name of the lecturer"
+        }
+      },
+      "required": ["id", "name"]
+    },
+    "Grade": {
+      "title": "Grade",
+      "description": "Grade section, e.g. 12A, 10B",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Grade ID, e.g. 12A"
+        },
+        "numStudents": {
+          "type": "number",
+          "description": "Total students in this grade"
+        },
+        "numSubjects": {
+          "type": "number",
+          "description": "Total subjects assigned"
+        },
+        "isInitialized": {
+          "type": "boolean",
+          "description": "Whether the academic ledger is initialized"
+        },
+        "isPublished": {
+          "type": "boolean",
+          "description": "Whether student grades are visible to the public student portal"
+        }
+      },
+      "required": ["id", "numStudents", "numSubjects", "isInitialized", "isPublished"]
+    },
+    "Subject": {
+      "title": "Subject",
+      "description": "An academic field of study assigned to a grade section",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Subject ID, e.g. 12A-SUB1"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the subject, e.g. Mathematics"
+        },
+        "passkey": {
+          "type": "string",
+          "description": "Passkey assigned to allow grading by teachers"
+        },
+        "teacherId": {
+          "type": "string",
+          "description": "ID of the assigned teacher"
+        }
+      },
+      "required": ["id", "name", "passkey"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Student record with descriptive properties and grading mark sheet matrix",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique student roll number, e.g. S-12A-01"
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the student"
+        },
+        "sex": {
+          "type": "string",
+          "enum": ["M", "F"],
+          "description": "Sex coordinate"
+        },
+        "age": {
+          "type": "number",
+          "description": "Age of the student"
+        },
+        "gradeId": {
+          "type": "string",
+          "description": "Grade section identifier"
+        },
+        "marks": {
+          "type": "object",
+          "description": "Map representing subject ID to semester marks"
+        }
+      },
+      "required": ["id", "name", "sex", "age", "gradeId", "marks"]
+    }
+  },
+  "firestore": {
+    "/teachers/{teacherId}": {
+      "schema": "Teacher",
+      "description": "Collection of registered teachers"
+    },
+    "/grades/{gradeId}": {
+      "schema": "Grade",
+      "description": "Collection of grade sections"
+    },
+    "/grades/{gradeId}/subjects/{subjectId}": {
+      "schema": "Subject",
+      "description": "Subcollection under grade listing assigned subjects"
+    },
+    "/grades/{gradeId}/students/{studentId}": {
+      "schema": "Student",
+      "description": "Subcollection under grade listing corresponding student marks sheets"
+    }
+  }
+}

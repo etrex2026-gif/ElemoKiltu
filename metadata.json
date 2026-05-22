@@ -1,0 +1,6 @@
+{
+  "name": "CHERCHER SECONDARY SCHOOL Result Management System",
+  "description": "The official result management and official academic transcript verifier system for CHERCHER SECONDARY SCHOOL.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
